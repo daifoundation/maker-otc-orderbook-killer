@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -ex
+
+export ETH_GAS=${ETH_GAS:-"500000"}
+export ETH_FROM=${ETH_FROM:-$(seth rpc eth_coinbase)}
+NETWORK=$(seth chain)
+
+# shellcheck source=/dev/null
+. ./"$NETWORK"-pairs
+
+ETH_NONCE=$(seth nonce "$ETH_FROM")
+
+remove_offers () {
+    OFFER_ID="$1"
+    while [  "$(seth --to-dec "$OFFER_ID")" -gt 0 ]; do
+    NEXT_OFFER_ID=$(seth call "$OTC" "getWorseOffer(uint256)(uint256)" "$OFFER_ID")
+    echo "Deleting offer $(seth --to-dec "$OFFER_ID")..."
+    ETH_NONCE=$((ETH_NONCE)) seth send "$OTC" "cancel(uint256)" "$OFFER_ID" --async
+    ETH_NONCE=$((ETH_NONCE + 1))
+    OFFER_ID="$NEXT_OFFER_ID"
+    done
+}
+
+for PAIR in $ALL_PAIRS; do
+    ADDR1=$(echo "$PAIR" | cut -f1 -d-)
+    ADDR2=$(echo "$PAIR" | cut -f2 -d-)
+
+    OFFER_ID=$(seth call "$OTC" "getBestOffer(address,address)(uint256)" "$ADDR1" "$ADDR2")
+    remove_offers "$OFFER_ID"
+
+    OFFER_ID=$(seth call "$OTC" "getBestOffer(address,address)(uint256)" "$ADDR2" "$ADDR1")
+    remove_offers "$OFFER_ID"
+done
