@@ -19,4 +19,5 @@ This script only removes orders which belong to the sorted book.
 - `export ETH_PASSWORD=ACCOUNT_PASSWORD_FILE_PATH`
 - `export ETH_KEYSTORE=KEYSTORE_PATH` (If not using the default one)
 - `export SETH_CHAIN=<kovan || ethlive>` or `export ETH_RPC_URL=YOUR_RPC_NODE_URL`
+- `export OTC=MARKET_CONTRACT_ADDRESS`
 - `./purge`
