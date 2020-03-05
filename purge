@@ -13,9 +13,9 @@ ETH_NONCE=$(seth nonce "$ETH_FROM")
 remove_offers () {
     OFFER_ID="$1"
     while [  "$(seth --to-dec "$OFFER_ID")" -gt 0 ]; do
-    NEXT_OFFER_ID=$(seth call "$OTC" "getWorseOffer(uint256)(uint256)" "$OFFER_ID")
+    NEXT_OFFER_ID=$(seth call "$OTC" "getWorseOffer(uint256)(uint256)" "$(seth --to-dec "$OFFER_ID")")
     echo "Deleting offer $(seth --to-dec "$OFFER_ID")..."
-    ETH_NONCE=$((ETH_NONCE)) seth send "$OTC" "cancel(uint256)" "$OFFER_ID" --async
+    ETH_NONCE=$((ETH_NONCE)) seth send "$OTC" "cancel(uint256)" "$(seth --to-dec "$OFFER_ID")" --async
     ETH_NONCE=$((ETH_NONCE + 1))
     OFFER_ID="$NEXT_OFFER_ID"
     done
